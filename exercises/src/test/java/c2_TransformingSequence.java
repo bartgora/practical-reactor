@@ -1,17 +1,17 @@
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 /**
  * It's time to do some data manipulation!
- *
+ * <p>
  * Read first:
- *
+ * <p>
  * https://projectreactor.io/docs/core/release/reference/#which.values
- *
+ * <p>
  * Useful documentation:
- *
+ * <p>
  * https://projectreactor.io/docs/core/release/reference/#which-operator
  * https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Mono.html
  * https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Flux.html
@@ -26,7 +26,7 @@ public class c2_TransformingSequence extends TransformingSequenceBase {
      */
     @Test
     public void transforming_sequence() {
-        Flux<Integer> numbersFlux = numerical_service()
+        Flux<Integer> numbersFlux = numerical_service().flatMap(integer -> Mono.just(integer + 1))
                 //todo change only this line
                 ;
 
@@ -48,12 +48,21 @@ public class c2_TransformingSequence extends TransformingSequenceBase {
         Flux<Integer> numbersFlux = numerical_service_2();
 
         //todo: do your changes here
-        Flux<String> resultSequence = null;
+        Flux<String> resultSequence = numbersFlux.flatMap(number -> Mono.just(check(number)));
 
         //don't change code below
         StepVerifier.create(resultSequence)
                     .expectNext(">", "<", "=", ">", ">")
                     .verifyComplete();
+    }
+
+    private String check(Integer input) {
+        if (input == 0) {
+            return "=";
+        } else if (input > 0) {
+            return ">";
+        }
+        return "<";
     }
 
     /**
@@ -65,8 +74,7 @@ public class c2_TransformingSequence extends TransformingSequenceBase {
     @Test
     public void cast() {
         Flux<String> numbersFlux = object_service()
-                .map(i -> (String) i); //todo: change this line only
-
+                .cast(String.class); //todo: change this line only
 
         StepVerifier.create(numbersFlux)
                     .expectNext("1", "2", "3", "4", "5")
@@ -122,7 +130,7 @@ public class c2_TransformingSequence extends TransformingSequenceBase {
     /**
      * A developer who wrote `numerical_service()` forgot that sequence should start with zero, so you must prepend zero
      * to result sequence.
-     *
+     * <p>
      * Do not alter `numerical_service` implementation!
      * Use only one operator.
      */
