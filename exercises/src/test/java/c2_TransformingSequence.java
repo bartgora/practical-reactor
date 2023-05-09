@@ -88,6 +88,7 @@ public class c2_TransformingSequence extends TransformingSequenceBase {
     @Test
     public void maybe() {
         Mono<String> result = maybe_service()
+                .defaultIfEmpty("no results")
                 //todo: change this line only
                 ;
 
@@ -102,9 +103,10 @@ public class c2_TransformingSequence extends TransformingSequenceBase {
      */
     @Test
     public void sequence_sum() {
-        Mono<Integer> sum = null;
+        Integer temp = 0;
+        Mono<Integer> sum =
         numerical_service()
-        //todo: do your changes here
+                .reduce(temp, (integer, integer2) -> integer + integer2)
         ;
 
         StepVerifier.create(sum)
@@ -119,6 +121,7 @@ public class c2_TransformingSequence extends TransformingSequenceBase {
     @Test
     public void sum_each_successive() {
         Flux<Integer> sumEach = numerical_service()
+                .scan((integer, integer2) -> integer + integer2)
                 //todo: do your changes here
                 ;
 
