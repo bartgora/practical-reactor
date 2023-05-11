@@ -1,4 +1,5 @@
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -9,17 +10,16 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-
 /**
  * Lifecycle hooks are used to add additional behavior (side-effects) and to peek into sequence without modifying it. In
  * this chapter we will explore most common lifecycle hooks.
- *
+ * <p>
  * Read first:
- *
+ * <p>
  * https://projectreactor.io/docs/core/release/reference/#which.peeking
- *
+ * <p>
  * Useful documentation:
- *
+ * <p>
  * https://projectreactor.io/docs/core/release/reference/#which-operator
  * https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Mono.html
  * https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Flux.html
@@ -37,6 +37,7 @@ public class c4_LifecycleHooks extends LifecycleHooksBase {
         CopyOnWriteArrayList<String> hooksTriggered = new CopyOnWriteArrayList<>();
 
         Flux<Integer> temperatureFlux = room_temperature_service()
+                .doOnSubscribe(subscription -> hooksTriggered.add("subscribe"))
                 //todo: change this line only
                 ;
 
@@ -55,7 +56,7 @@ public class c4_LifecycleHooks extends LifecycleHooksBase {
     public void be_there_early() {
         CopyOnWriteArrayList<String> hooksTriggered = new CopyOnWriteArrayList<>();
 
-        Flux<Integer> temperatureFlux = room_temperature_service()
+        Flux<Integer> temperatureFlux = room_temperature_service().doFirst(() -> hooksTriggered.add("before subscribe"))
                 //todo: change this line only
                 ;
 
@@ -74,7 +75,10 @@ public class c4_LifecycleHooks extends LifecycleHooksBase {
     public void atomic_counter() {
         AtomicInteger counter = new AtomicInteger(0);
 
-        Flux<Integer> temperatureFlux = room_temperature_service()
+        Flux<Integer> temperatureFlux = room_temperature_service().doOnNext(integer -> {
+            System.out.println(integer);
+            counter.incrementAndGet();
+        })
                 //todo: change this line only
                 ;
 
@@ -93,7 +97,7 @@ public class c4_LifecycleHooks extends LifecycleHooksBase {
     public void successfully_executed() {
         AtomicBoolean completed = new AtomicBoolean(false);
 
-        Flux<Integer> temperatureFlux = room_temperature_service()
+        Flux<Integer> temperatureFlux = room_temperature_service().doOnComplete(()-> completed.set(true))
                 //todo: change this line only
                 ;
 
@@ -112,7 +116,7 @@ public class c4_LifecycleHooks extends LifecycleHooksBase {
     public void need_to_cancel() {
         AtomicBoolean canceled = new AtomicBoolean(false);
 
-        Flux<Integer> temperatureFlux = room_temperature_service()
+        Flux<Integer> temperatureFlux = room_temperature_service().doOnCancel(()-> canceled.set(true))
                 //todo: change this line only
                 ;
 
@@ -133,6 +137,8 @@ public class c4_LifecycleHooks extends LifecycleHooksBase {
         AtomicInteger hooksTriggeredCounter = new AtomicInteger(0);
 
         Flux<Integer> temperatureFlux = room_temperature_service()
+                .doOnComplete(()-> hooksTriggeredCounter.incrementAndGet())
+                .doOnError(throwable -> hooksTriggeredCounter.incrementAndGet())
                 //todo: change this line only
                 ;
 
@@ -206,10 +212,10 @@ public class c4_LifecycleHooks extends LifecycleHooksBase {
      * There is advanced operator, typically used for monitoring of a Flux. This operator will add behavior
      * (side-effects) triggered for each signal that happens on Flux. It also has access to the context, which might be
      * useful later.
-     *
+     * <p>
      * In this exercise, Flux will emit three elements and then complete. Add signal names to `signal` list dynamically,
      * once these signals occur.
-     *
+     * <p>
      * Bonus: Explore this operator's documentation, as it may be useful in the future.
      */
     @Test
