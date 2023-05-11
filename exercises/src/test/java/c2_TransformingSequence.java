@@ -140,6 +140,7 @@ public class c2_TransformingSequence extends TransformingSequenceBase {
     @Test
     public void sequence_starts_with_zero() {
         Flux<Integer> result = numerical_service()
+                .startWith(0)
                 //todo: change this line only
                 ;
 
