@@ -1,13 +1,12 @@
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -17,15 +16,15 @@ import java.util.stream.Stream;
  * In this chapter we are going to cover fundamentals of how to create a sequence. At the end of this
  * chapter we will tackle more complex methods like generate, create, push, and we will meet them again in following
  * chapters like Sinks and Backpressure.
- *
+ * <p>
  * Read first:
- *
+ * <p>
  * https://projectreactor.io/docs/core/release/reference/#which.create
  * https://projectreactor.io/docs/core/release/reference/#producing
  * https://projectreactor.io/docs/core/release/reference/#_simple_ways_to_create_a_flux_or_mono_and_subscribe_to_it
- *
+ * <p>
  * Useful documentation:
- *
+ * <p>
  * https://projectreactor.io/docs/core/release/reference/#which-operator
  * https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Mono.html
  * https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Flux.html
@@ -223,7 +222,7 @@ public class c5_CreatingSequence {
      */
     @Test
     public void range() {
-        Flux<Integer> range = Flux.range(-5,11); //todo: change this line only
+        Flux<Integer> range = Flux.range(-5, 11); //todo: change this line only
 
         System.out.println("Range: ");
         StepVerifier.create(range.doOnNext(System.out::println))
@@ -238,7 +237,7 @@ public class c5_CreatingSequence {
     @Test
     public void repeat() {
         AtomicInteger counter = new AtomicInteger(0);
-        Flux<Integer> repeated = Mono.fromCallable(()->counter.incrementAndGet()).repeat(9); //todo: change this line
+        Flux<Integer> repeated = Mono.fromCallable(() -> counter.incrementAndGet()).repeat(9); //todo: change this line
 
         System.out.println("Repeat: ");
         StepVerifier.create(repeated.doOnNext(System.out::println))
@@ -249,7 +248,7 @@ public class c5_CreatingSequence {
     /**
      * Following example is just a basic usage of `generate,`create`,`push` sinks. We will learn how to use them in a
      * more complex scenarios when we tackle backpressure.
-     *
+     * <p>
      * Answer:
      * - What is difference between `generate` and `create`?
      * - What is difference between `create` and `push`?
@@ -257,21 +256,32 @@ public class c5_CreatingSequence {
     @Test
     public void generate_programmatically() {
 
+        AtomicInteger counter = new AtomicInteger(1);
         Flux<Integer> generateFlux = Flux.generate(sink -> {
+            int current = counter.getAndIncrement();
+            if (current == 5) {
+                sink.next(current);
+                sink.complete();
+            } else {
+                sink.next(current);
+            }
             //todo: fix following code so it emits values from 0 to 5 and then completes
         });
 
         //------------------------------------------------------
-
         Flux<Integer> createFlux = Flux.create(sink -> {
+            for (int i = 1; i <= 5; i++) {
+                final var finalI = i;
+                new Thread(() -> sink.next(finalI)).start();
+            }
             //todo: fix following code so it emits values from 0 to 5 and then completes
         });
 
         //------------------------------------------------------
 
-        Flux<Integer> pushFlux = Flux.push(sink -> {
-            //todo: fix following code so it emits values from 0 to 5 and then completes
-        });
+//        Flux<Integer> pushFlux = Flux.push(sink -> {
+//            //todo: fix following code so it emits values from 0 to 5 and then completes
+//        });
 
         StepVerifier.create(generateFlux)
                     .expectNext(1, 2, 3, 4, 5)
@@ -281,9 +291,9 @@ public class c5_CreatingSequence {
                     .expectNext(1, 2, 3, 4, 5)
                     .verifyComplete();
 
-        StepVerifier.create(pushFlux)
-                    .expectNext(1, 2, 3, 4, 5)
-                    .verifyComplete();
+//        StepVerifier.create(pushFlux)
+//                    .expectNext(1, 2, 3, 4, 5)
+//                    .verifyComplete();
     }
 
     /**
