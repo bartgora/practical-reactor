@@ -1,8 +1,7 @@
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import reactor.blockhound.BlockHound;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Hooks;
-import reactor.core.publisher.Mono;
+import reactor.core.publisher.*;
 import reactor.test.StepVerifier;
 
 import java.util.Objects;
@@ -12,13 +11,13 @@ import java.util.function.Function;
 
 /**
  * In this important chapter we are going to cover different ways of combining publishers.
- *
+ * <p>
  * Read first:
- *
+ * <p>
  * https://projectreactor.io/docs/core/release/reference/#which.values
- *
+ * <p>
  * Useful documentation:
- *
+ * <p>
  * https://projectreactor.io/docs/core/release/reference/#which-operator
  * https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Mono.html
  * https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Flux.html
@@ -31,7 +30,7 @@ public class c6_CombiningPublishers extends CombiningPublishersBase {
      * Goal of this exercise is to retrieve e-mail of currently logged-in user.
      * `getCurrentUser()` method retrieves currently logged-in user
      * and `getUserEmail()` will return e-mail for given user.
-     *
+     * <p>
      * No blocking operators, no subscribe operator!
      * You may only use `flatMap()` operator.
      */
@@ -40,9 +39,7 @@ public class c6_CombiningPublishers extends CombiningPublishersBase {
         Hooks.enableContextLossTracking(); //used for testing - detects if you are cheating!
 
         //todo: feel free to change code as you need
-        Mono<String> currentUserEmail = null;
-        Mono<String> currentUserMono = getCurrentUser();
-        getUserEmail(null);
+        Mono<String> currentUserEmail = getCurrentUser().flatMap(this::getUserEmail);
 
         //don't change below this line
         StepVerifier.create(currentUserEmail)
@@ -53,15 +50,14 @@ public class c6_CombiningPublishers extends CombiningPublishersBase {
     /**
      * `taskExecutor()` returns tasks that should execute important work.
      * Get all the tasks and execute them.
-     *
+     * <p>
      * Answer:
      * - Is there a difference between Mono.flatMap() and Flux.flatMap()?
      */
     @Test
     public void task_executor() {
         //todo: feel free to change code as you need
-        Flux<Void> tasks = null;
-        taskExecutor();
+        Flux<Void> tasks = taskExecutor().flatMap(voidMono -> voidMono);
 
         //don't change below this line
         StepVerifier.create(tasks)
@@ -73,14 +69,13 @@ public class c6_CombiningPublishers extends CombiningPublishersBase {
     /**
      * `streamingService()` opens a connection to the data provider.
      * Once connection is established you will be able to collect messages from stream.
-     *
+     * <p>
      * Establish connection and get all messages from data provider stream!
      */
     @Test
     public void streaming_service() {
         //todo: feel free to change code as you need
-        Flux<Message> messageFlux = null;
-        streamingService();
+        Flux<Message> messageFlux = streamingService().flatMapMany(messageFlux1 -> messageFlux1);
 
         //don't change below this line
         StepVerifier.create(messageFlux)
@@ -88,11 +83,10 @@ public class c6_CombiningPublishers extends CombiningPublishersBase {
                     .verifyComplete();
     }
 
-
     /**
      * Join results from services `numberService1()` and `numberService2()` end-to-end.
      * First `numberService1` emits elements and then `numberService2`. (no interleaving)
-     *
+     * <p>
      * Bonus: There are two ways to do this, check out both!
      */
     @Test
@@ -110,12 +104,12 @@ public class c6_CombiningPublishers extends CombiningPublishersBase {
 
     /**
      * Similar to previous task:
-     *
+     * <p>
      * `taskExecutor()` returns tasks that should execute important work.
      * Get all the tasks and execute each of them.
-     *
+     * <p>
      * Instead of flatMap() use concatMap() operator.
-     *
+     * <p>
      * Answer:
      * - What is difference between concatMap() and flatMap()?
      * - What is difference between concatMap() and flatMapSequential()?
@@ -195,7 +189,7 @@ public class c6_CombiningPublishers extends CombiningPublishersBase {
     /**
      * You are implementing instant search for software company.
      * When user types in a text box results should appear in near real-time with each keystroke.
-     *
+     * <p>
      * Call `autoComplete()` function for each user input
      * but if newer input arrives, cancel previous `autoComplete()` call and call it for latest input.
      */
@@ -212,7 +206,6 @@ public class c6_CombiningPublishers extends CombiningPublishersBase {
                     .expectNext("reactor project", "reactive project")
                     .verifyComplete();
     }
-
 
     /**
      * Code should work, but it should also be easy to read and understand.
@@ -273,7 +266,6 @@ public class c6_CombiningPublishers extends CombiningPublishersBase {
         Assertions.assertEquals(3, committedTasksCounter.get());
     }
 
-
     /**
      * News have come that Microsoft is buying Blizzard and there will be a major merger.
      * Merge two companies, so they may still produce titles in individual pace but as a single company.
@@ -295,7 +287,6 @@ public class c6_CombiningPublishers extends CombiningPublishersBase {
                                 "warcraft4")
                     .verifyComplete();
     }
-
 
     /**
      * Your job is to produce cars. To produce car you need chassis and engine that are produced by a different
@@ -355,7 +346,7 @@ public class c6_CombiningPublishers extends CombiningPublishersBase {
      * Sometimes you need to clean up after your self.
      * Open a connection to a streaming service and after all elements have been consumed,
      * close connection (invoke closeConnection()), without blocking.
-     *
+     * <p>
      * This may look easy...
      */
     @Test
@@ -369,7 +360,7 @@ public class c6_CombiningPublishers extends CombiningPublishersBase {
 
         //don't change below this line
         StepVerifier.create(stream)
-                    .then(()-> Assertions.assertTrue(StreamingConnection.isOpen.get()))
+                    .then(() -> Assertions.assertTrue(StreamingConnection.isOpen.get()))
                     .expectNextCount(20)
                     .verifyComplete();
         Assertions.assertTrue(StreamingConnection.cleanedUp.get());

@@ -270,18 +270,25 @@ public class c5_CreatingSequence {
 
         //------------------------------------------------------
         Flux<Integer> createFlux = Flux.create(sink -> {
-            for (int i = 1; i <= 5; i++) {
-                final var finalI = i;
-                new Thread(() -> sink.next(finalI)).start();
-            }
+
+            new Thread(() -> {
+                for (int i = 1; i <= 5; i++) {
+                    sink.next(i);
+                }
+                sink.complete();
+            }).start();
             //todo: fix following code so it emits values from 0 to 5 and then completes
         });
 
         //------------------------------------------------------
 
-//        Flux<Integer> pushFlux = Flux.push(sink -> {
-//            //todo: fix following code so it emits values from 0 to 5 and then completes
-//        });
+        Flux<Integer> pushFlux = Flux.push(sink -> {
+            for (int i = 1; i <= 5; i++) {
+                sink.next(i);
+            }
+            sink.complete();
+            //todo: fix following code so it emits values from 0 to 5 and then completes
+        });
 
         StepVerifier.create(generateFlux)
                     .expectNext(1, 2, 3, 4, 5)
@@ -291,9 +298,9 @@ public class c5_CreatingSequence {
                     .expectNext(1, 2, 3, 4, 5)
                     .verifyComplete();
 
-//        StepVerifier.create(pushFlux)
-//                    .expectNext(1, 2, 3, 4, 5)
-//                    .verifyComplete();
+        StepVerifier.create(pushFlux)
+                    .expectNext(1, 2, 3, 4, 5)
+                    .verifyComplete();
     }
 
     /**
