@@ -137,12 +137,11 @@ public class c6_CombiningPublishers extends CombiningPublishersBase {
     @Test
     public void need_for_speed() {
         //todo: feel free to change code as you need
-        Flux<String> stonks = null;
         getStocksGrpc();
         getStocksRest();
-        stonks = Flux.firstWithValue(List.of(getStocksGrpc(), getStocksRest()));
+        Flux<String> stocks = Flux.firstWithValue(List.of(getStocksGrpc(), getStocksRest()));
         //don't change below this line
-        StepVerifier.create(stonks)
+        StepVerifier.create(stocks)
                     .expectNextCount(5)
                     .verifyComplete();
     }
