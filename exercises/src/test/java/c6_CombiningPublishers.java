@@ -4,6 +4,8 @@ import reactor.blockhound.BlockHound;
 import reactor.core.publisher.*;
 import reactor.test.StepVerifier;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -203,8 +205,7 @@ public class c6_CombiningPublishers extends CombiningPublishersBase {
     @Test
     public void instant_search() {
         //todo: feel free to change code as you need
-        autoComplete(null);
-        Flux<String> suggestions = userSearchInput()
+        Flux<String> suggestions = userSearchInput().switchMap(this::autoComplete)
                 //todo: use one operator only
                 ;
 
